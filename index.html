@@ -1,0 +1,1234 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rate Board Game - Chemistry Educational Game</title>
+    <style>
+        :root {
+            --konsentrasi-color: #3498db;
+            --suhu-color: #e67e22;
+            --luas-permukaan-color: #2ecc71;
+            --katalis-color: #9b59b6;
+            --main-bg: #f0f0f0;
+            --cell-bg: white;
+            --text-color: #333;
+            --highlight: #f39c12;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Roboto', 'Open Sans', sans-serif;
+        }
+
+        body {
+            background-color: var(--main-bg);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .game-title {
+            font-family: 'Bangers', 'Fredoka One', cursive;
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: var(--text-color);
+            text-align: center;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .game-container {
+            max-width: 800px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .screen {
+            background-color: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        .welcome-screen {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .welcome-animation {
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+            animation: fadeIn 2s;
+        }
+
+        .btn-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            font-size: 1rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            min-width: 150px;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-primary {
+            background-color: var(--highlight);
+            color: white;
+        }
+
+        .btn-secondary {
+            background-color: var(--text-color);
+            color: white;
+        }
+
+        .mode-selection, .symbol-selection {
+            text-align: center;
+            padding: 30px 20px;
+        }
+
+        .symbol-btn {
+            font-size: 2rem;
+            width: 80px;
+            height: 80px;
+            margin: 0 15px;
+            border-radius: 50%;
+            border: 3px solid var(--text-color);
+            background-color: var(--cell-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .symbol-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .cell {
+            aspect-ratio: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--cell-bg);
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s;
+        }
+
+        .cell:hover {
+            transform: translateY(-5px);
+        }
+
+        .cell-zone {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            font-size: 14px;
+        }
+
+        .zone-K {
+            background-color: var(--konsentrasi-color);
+        }
+
+        .zone-S {
+            background-color: var(--suhu-color);
+        }
+
+        .zone-L {
+            background-color: var(--luas-permukaan-color);
+        }
+
+        .zone-C {
+            background-color: var(--katalis-color);
+        }
+
+        .cell-content {
+            font-size: 3rem;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .question-screen {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .question {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .option-btn {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: left;
+            background-color: white;
+            transition: all 0.2s;
+        }
+
+        .option-btn:hover {
+            background-color: #f5f5f5;
+        }
+
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding: 10px;
+            background-color: rgba(0, 0, 0, 0.05);
+            border-radius: 8px;
+        }
+
+        .player-turn {
+            font-weight: bold;
+        }
+
+        .result-screen {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .result-message {
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+            animation: pulse 2s infinite;
+        }
+
+        .tutorial-screen {
+            padding: 20px;
+        }
+
+        .tutorial-section {
+            margin-bottom: 20px;
+        }
+
+        .zone-explanation {
+            margin-top: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .zone-card {
+            padding: 15px;
+            border-radius: 8px;
+            color: white;
+        }
+
+        .zone-card h4 {
+            margin-bottom: 10px;
+        }
+
+        .konsentrasi-card {
+            background-color: var(--konsentrasi-color);
+        }
+
+        .suhu-card {
+            background-color: var(--suhu-color);
+        }
+
+        .luas-card {
+            background-color: var(--luas-permukaan-color);
+        }
+
+        .katalis-card {
+            background-color: var(--katalis-color);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .settings-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 1.5rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+
+        .settings-screen {
+            padding: 20px;
+        }
+
+        .settings-option {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--highlight);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 600px) {
+            .game-title {
+                font-size: 2rem;
+            }
+            
+            .cell-content {
+                font-size: 2rem;
+            }
+            
+            .btn {
+                min-width: 120px;
+                padding: 10px 20px;
+            }
+        }
+
+        .correct-answer {
+            background-color: rgba(46, 204, 113, 0.2);
+        }
+
+        .wrong-answer {
+            background-color: rgba(231, 76, 60, 0.2);
+        }
+
+        .feedback {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+
+        .difficulty-selection {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            justify-content: center;
+        }
+
+        .difficulty-btn {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .difficulty-btn.active {
+            background-color: var(--highlight);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <h1 class="game-title">Rate Board Game</h1>
+    
+    <div class="game-container">
+        <!-- Welcome Screen -->
+        <div id="welcomeScreen" class="screen welcome-screen active">
+            <div class="welcome-animation">
+                <p>Selamat datang di Rate Board Game!</p>
+                <p>Buktikan pengetahuan kimiamu tentang laju reaksi dan jadilah pemenang!</p>
+            </div>
+            <div class="btn-container">
+                <button id="startBtn" class="btn btn-primary">Mulai Game</button>
+                <button id="tutorialBtn" class="btn btn-secondary">Tutorial</button>
+            </div>
+        </div>
+        
+        <!-- Tutorial Screen -->
+        <div id="tutorialScreen" class="screen tutorial-screen">
+            <h2>Tutorial Game</h2>
+            
+            <div class="tutorial-section">
+                <h3>Cara Bermain:</h3>
+                <ol>
+                    <li>Pilih mode permainan (melawan teman atau komputer)</li>
+                    <li>Pilih simbol X atau O untuk permainan</li>
+                    <li>Klik sel pada papan untuk mengklaim</li>
+                    <li>Jawab pertanyaan kimia sesuai zona untuk mengklaim sel</li>
+                    <li>Bentuk garis lurus dari simbolmu untuk menang</li>
+                </ol>
+            </div>
+            
+            <div class="tutorial-section">
+                <h3>Zona dan Kategori Pertanyaan:</h3>
+                <div class="zone-explanation">
+                    <div class="zone-card konsentrasi-card">
+                        <h4>Konsentrasi [K]</h4>
+                        <p>Pertanyaan tentang pengaruh konsentrasi terhadap laju reaksi</p>
+                    </div>
+                    <div class="zone-card suhu-card">
+                        <h4>Suhu [S]</h4>
+                        <p>Pertanyaan tentang pengaruh suhu terhadap laju reaksi</p>
+                    </div>
+                    <div class="zone-card luas-card">
+                        <h4>Luas Permukaan [L]</h4>
+                        <p>Pertanyaan tentang pengaruh luas permukaan terhadap laju reaksi</p>
+                    </div>
+                    <div class="zone-card katalis-card">
+                        <h4>Katalis [C]</h4>
+                        <p>Pertanyaan tentang pengaruh katalis terhadap laju reaksi</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="btn-container">
+                <button id="backFromTutorialBtn" class="btn btn-secondary">Kembali</button>
+            </div>
+        </div>
+
+        <!-- Mode Selection Screen -->
+        <div id="modeScreen" class="screen mode-selection">
+            <h2>Pilih Mode Permainan</h2>
+            <div class="btn-container">
+                <button id="vsPlayerBtn" class="btn btn-primary">VS Teman</button>
+                <button id="vsComputerBtn" class="btn btn-primary">VS Komputer</button>
+            </div>
+            <div class="difficulty-selection">
+                <button class="difficulty-btn active" data-difficulty="easy">Mudah</button>
+                <button class="difficulty-btn" data-difficulty="medium">Sedang</button>
+                <button class="difficulty-btn" data-difficulty="hard">Sulit</button>
+            </div>
+        </div>
+        
+        <!-- Symbol Selection Screen -->
+        <div id="symbolScreen" class="screen symbol-selection">
+            <h2>Pilih Simbol Anda</h2>
+            <div class="btn-container">
+                <button id="symbolX" class="symbol-btn">X</button>
+                <button id="symbolO" class="symbol-btn">O</button>
+            </div>
+        </div>
+        
+        <!-- Game Board Screen -->
+        <div id="gameScreen" class="screen">
+            <div class="game-info">
+                <div class="player-turn">Giliran: <span id="currentPlayer">X</span></div>
+                <div class="score">Skor: <span id="scoreX">0</span> - <span id="scoreO">0</span></div>
+            </div>
+            <div id="gameBoard" class="game-board">
+                <!-- Cells will be generated by JavaScript -->
+            </div>
+            <div class="btn-container">
+                <button id="restartBtn" class="btn btn-secondary">Mulai Ulang</button>
+                <button id="mainMenuBtn" class="btn btn-secondary">Menu Utama</button>
+            </div>
+        </div>
+        
+        <!-- Question Screen -->
+        <div id="questionScreen" class="screen question-screen">
+            <h2 id="questionZone">Pertanyaan - Zona</h2>
+            <div id="question" class="question">
+                <!-- Question text will be inserted here -->
+            </div>
+            <div id="optionsContainer" class="options-container">
+                <!-- Options will be inserted here -->
+            </div>
+            <div id="answerFeedback" class="feedback" style="display: none;"></div>
+        </div>
+        
+        <!-- Result Screen -->
+        <div id="resultScreen" class="screen result-screen">
+            <div id="resultMessage" class="result-message">
+                <!-- Result message will be inserted here -->
+            </div>
+            <div class="btn-container">
+                <button id="playAgainBtn" class="btn btn-primary">Main Lagi</button>
+                <button id="resultMenuBtn" class="btn btn-secondary">Menu Utama</button>
+            </div>
+        </div>
+        
+        <!-- Settings Screen -->
+        <div id="settingsScreen" class="screen settings-screen">
+            <h2>Pengaturan</h2>
+            <div class="settings-option">
+                <span>Efek Suara</span>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="soundToggle" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="settings-option">
+                <span>Musik Latar</span>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="musicToggle">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="btn-container">
+                <button id="backFromSettingsBtn" class="btn btn-secondary">Kembali</button>
+            </div>
+        </div>
+    </div>
+    
+    <button id="settingsBtn" class="settings-btn">⚙️</button>
+
+    <script>
+        // Game variables
+        let gameMode = ''; // 'player' or 'computer'
+        let currentPlayer = 'X';
+        let playerSymbol = '';
+        let opponentSymbol = '';
+        let board = ['', '', '', '', '', '', '', '', ''];
+        let boardZones = [];
+        let isGameActive = true;
+        let scores = { X: 0, O: 0 };
+        let difficulty = 'easy';
+        let soundEnabled = true;
+        let musicEnabled = false;
+        let selectedCell = null;
+        
+        // Question bank by zone and difficulty
+        const questions = {
+            K: {
+                easy: [
+                    {
+                        question: "Bagaimana pengaruh konsentrasi terhadap laju reaksi?",
+                        options: [
+                            "Semakin tinggi konsentrasi, semakin cepat laju reaksi",
+                            "Semakin tinggi konsentrasi, semakin lambat laju reaksi",
+                            "Konsentrasi tidak mempengaruhi laju reaksi",
+                            "Pengaruh konsentrasi tergantung pada jenis reaksi"
+                        ],
+                        answer: 0
+                    },
+                    {
+                        question: "Mengapa konsentrasi yang lebih tinggi menyebabkan laju reaksi meningkat?",
+                        options: [
+                            "Karena tumbukan antar partikel lebih sering terjadi",
+                            "Karena energi aktivasi menurun",
+                            "Karena suhu reaksi meningkat",
+                            "Karena meningkatkan massa reaktan"
+                        ],
+                        answer: 0
+                    }
+                ],
+                medium: [
+                    {
+                        question: "Jika konsentrasi reaktan A dinaikkan menjadi 2 kali lipat, dan orde reaksi terhadap A adalah 1, bagaimana pengaruhnya terhadap laju reaksi?",
+                        options: [
+                            "Laju reaksi menjadi 2 kali lebih cepat",
+                            "Laju reaksi tidak berubah",
+                            "Laju reaksi menjadi 4 kali lebih cepat",
+                            "Laju reaksi menjadi setengahnya"
+                        ],
+                        answer: 0
+                    },
+                    {
+                        question: "Jika konsentrasi reaktan B dinaikkan menjadi 3 kali lipat, dan orde reaksi terhadap B adalah 2, bagaimana pengaruhnya terhadap laju reaksi?",
+                        options: [
+                            "Laju reaksi menjadi 3 kali lebih cepat",
+                            "Laju reaksi menjadi 6 kali lebih cepat",
+                            "Laju reaksi menjadi 9 kali lebih cepat",
+                            "Laju reaksi tidak berubah"
+                        ],
+                        answer: 2
+                    }
+                ],
+                hard: [
+                    {
+                        question: "Diketahui persamaan laju reaksi v = k[A]²[B]. Jika konsentrasi A dinaikkan 2 kali dan konsentrasi B dinaikkan 3 kali, berapa kali laju reaksi akan meningkat?",
+                        options: [
+                            "5 kali",
+                            "6 kali",
+                            "12 kali",
+                            "36 kali"
+                        ],
+                        answer: 2
+                    },
+                    {
+                        question: "Dalam reaksi orde nol, bagaimana pengaruh perubahan konsentrasi terhadap laju reaksi?",
+                        options: [
+                            "Laju reaksi meningkat sebanding dengan konsentrasi",
+                            "Laju reaksi meningkat sebanding dengan kuadrat konsentrasi",
+                            "Laju reaksi tidak dipengaruhi oleh perubahan konsentrasi",
+                            "Laju reaksi menurun dengan peningkatan konsentrasi"
+                        ],
+                        answer: 2
+                    }
+                ]
+            },
+            S: {
+                easy: [
+                    {
+                        question: "Bagaimana pengaruh suhu terhadap laju reaksi?",
+                        options: [
+                            "Semakin tinggi suhu, semakin cepat laju reaksi",
+                            "Semakin tinggi suhu, semakin lambat laju reaksi",
+                            "Suhu tidak mempengaruhi laju reaksi",
+                            "Pengaruh suhu selalu bergantung pada jenis reaktan"
+                        ],
+                        answer: 0
+                    },
+                    {
+                        question: "Mengapa peningkatan suhu mempercepat reaksi kimia?",
+                        options: [
+                            "Karena energi kinetik partikel meningkat",
+                            "Karena massa partikel berkurang",
+                            "Karena tekanan selalu meningkat",
+                            "Karena waktu reaksi menjadi lebih singkat"
+                        ],
+                        answer: 0
+                    }
+                ],
+                medium: [
+                    {
+                        question: "Menurut aturan umum, kenaikan suhu sebesar 10°C dapat meningkatkan laju reaksi menjadi berapa kali lipat?",
+                        options: [
+                            "1,5 kali",
+                            "2-3 kali",
+                            "5-6 kali",
+                            "10 kali"
+                        ],
+                        answer: 1
+                    },
+                    {
+                        question: "Bagaimana hubungan antara suhu dengan energi aktivasi?",
+                        options: [
+                            "Peningkatan suhu akan menurunkan energi aktivasi",
+                            "Peningkatan suhu tidak mengubah energi aktivasi, tetapi meningkatkan jumlah molekul yang memiliki energi melebihi energi aktivasi",
+                            "Peningkatan suhu akan meningkatkan energi aktivasi",
+                            "Tidak ada hubungan antara suhu dengan energi aktivasi"
+                        ],
+                        answer: 1
+                    }
+                ],
+                hard: [
+                    {
+                        question: "Berdasarkan persamaan Arrhenius, jika laju reaksi meningkat 4 kali lipat ketika suhu naik dari 20°C menjadi 40°C, berapa energi aktivasi reaksi tersebut (dalam kJ/mol)? (R = 8,314 J/mol·K)",
+                        options: [
+                            "25,3 kJ/mol",
+                            "42,7 kJ/mol",
+                            "53,8 kJ/mol",
+                            "67,2 kJ/mol"
+                        ],
+                        answer: 2
+                    },
+                    {
+                        question: "Pada suhu berapakah laju reaksi dengan energi aktivasi 50 kJ/mol akan meningkat menjadi 2 kali lipat dari laju pada suhu 300 K? (R = 8,314 J/mol·K)",
+                        options: [
+                            "310 K",
+                            "323 K",
+                            "330 K",
+                            "350 K"
+                        ],
+                        answer: 1
+                    }
+                ]
+            },
+            L: {
+                easy: [
+                    {
+                        question: "Bagaimana pengaruh luas permukaan terhadap laju reaksi?",
+                        options: [
+                            "Semakin besar luas permukaan, semakin cepat laju reaksi",
+                            "Semakin besar luas permukaan, semakin lambat laju reaksi",
+                            "Luas permukaan tidak mempengaruhi laju reaksi",
+                            "Pengaruh luas permukaan selalu bergantung pada jenis reaktan"
+                        ],
+                        answer: 0
+                    },
+                    {
+                        question: "Mengapa serbuk zat padat bereaksi lebih cepat dibanding bentuk kepingan?",
+                        options: [
+                            "Karena serbuk memiliki luas permukaan yang lebih besar",
+                            "Karena serbuk memiliki masa yang lebih ringan",
+                            "Karena serbuk memiliki volume yang lebih kecil",
+                            "Karena serbuk memiliki densitas yang lebih tinggi"
+                        ],
+                        answer: 0
+                    }
+                ],
+                medium: [
+                    {
+                        question: "Contoh aplikasi pengaruh luas permukaan dalam kehidupan sehari-hari adalah...",
+                        options: [
+                            "Menggunakan katalis pada knalpot",
+                            "Memasak dengan api kecil",
+                            "Menggiling kopi sebelum diseduh",
+                            "Menyimpan makanan di lemari es"
+                        ],
+                        answer: 2
+                    },
+                    {
+                        question: "Bagaimana cara meningkatkan luas permukaan zat padat untuk mempercepat reaksi?",
+                        options: [
+                            "Memanaskan zat padat",
+                            "Menghaluskan zat padat menjadi butiran kecil",
+                            "Menambahkan pelarut",
+                            "Menambahkan katalis"
+                        ],
+                        answer: 1
+                    }
+                ],
+                hard: [
+                    {
+                        question: "Jika ukuran partikel zat padat diperkecil sehingga diameter partikel menjadi setengahnya, berapa kali luas permukaan total akan meningkat (dengan asumsi massa tetap)?",
+                        options: [
+                            "2 kali",
+                            "4 kali",
+                            "8 kali",
+                            "Tidak berubah"
+                        ],
+                        answer: 1
+                    },
+                    {
+                        question: "Bagaimana luas permukaan mempengaruhi frekuensi tumbukan antar partikel dalam reaksi heterogen?",
+                        options: [
+                            "Luas permukaan yang lebih besar meningkatkan energi aktivasi",
+                            "Luas permukaan yang lebih besar menurunkan energi aktivasi",
+                            "Luas permukaan yang lebih besar meningkatkan area kontak antar reaktan, sehingga meningkatkan frekuensi tumbukan efektif",
+                            "Luas permukaan yang lebih besar menurunkan konsentrasi reaktan"
+                        ],
+                        answer: 2
+                    }
+                ]
+            },
+            C: {
+                easy: [
+                    {
+                        question: "Bagaimana katalis mempengaruhi laju reaksi?",
+                        options: [
+                            "Katalis mempercepat laju reaksi",
+                            "Katalis memperlambat laju reaksi",
+                            "Katalis tidak mempengaruhi laju reaksi",
+                            "Katalis mengubah hasil reaksi"
+                        ],
+                        answer: 0
+                    },
+                    {
+                        question: "Mengapa katalis tidak ikut bereaksi dalam reaksi kimia?",
+                        options: [
+                            "Karena katalis selalu dalam fase yang berbeda dengan reaktan",
+                            "Karena katalis digunakan kembali setelah reaksi selesai",
+                            "Karena katalis memiliki struktur yang sangat stabil",
+                            "Karena katalis tidak mempengaruhi energi aktivasi"
+                        ],
+                        answer: 1
+                    }
+                ],
+                medium: [
+                    {
+                        question: "Bagaimana katalis mempengaruhi energi aktivasi?",
+                        options: [
+                            "Katalis meningkatkan energi aktivasi",
+                            "Katalis menurunkan energi aktivasi",
+                            "Katalis tidak mempengaruhi energi aktivasi",
+                            "Katalis menghilangkan kebutuhan energi aktivasi"
+                        ],
+                        answer: 1
+                    },
+                    {
+                        question: "Contoh katalis dalam kehidupan sehari-hari adalah...",
+                        options: [
+                            "Gula dalam minuman",
+                            "Garam dalam masakan",
+                            "Enzim dalam sistem pencernaan",
+                            "Vitamin dalam buah-buahan"
+                        ],
+                        answer: 2
+                    }
+                ],
+                hard: [
+                    {
+                        question: "Katalis heterogen bekerja dengan cara...",
+                        options: [
+                            "Bereaksi dengan reaktan untuk membentuk intermediet yang tidak stabil",
+                            "Menyediakan permukaan aktif tempat reaktan dapat teradsorpsi",
+                            "Mengubah struktur molekul reaktan secara permanen",
+                            "Meningkatkan konsentrasi reaktan"
+                        ],
+                        answer: 1
+                    },
+                    {
+                        question: "Manakah pernyataan yang TIDAK benar tentang katalis?",
+                        options: [
+                            "Katalis dapat berupa zat padat, cair, atau gas",
+                            "Katalis ikut bereaksi dan habis terpakai di akhir reaksi",
+                            "Katalis spesifik untuk reaksi tertentu",
+                            "Katalis dapat meningkatkan selektivitas reaksi"
+                        ],
+                        answer: 1
+                    }
+                ]
+            }
+        };
+        
+        // DOM Elements
+        const screens = {
+            welcome: document.getElementById('welcomeScreen'),
+            tutorial: document.getElementById('tutorialScreen'),
+            mode: document.getElementById('modeScreen'),
+            symbol: document.getElementById('symbolScreen'),
+            game: document.getElementById('gameScreen'),
+            question: document.getElementById('questionScreen'),
+            result: document.getElementById('resultScreen'),
+            settings: document.getElementById('settingsScreen')
+        };
+        
+        const elements = {
+            gameBoard: document.getElementById('gameBoard'),
+            currentPlayer: document.getElementById('currentPlayer'),
+            scoreX: document.getElementById('scoreX'),
+            scoreO: document.getElementById('scoreO'),
+            question: document.getElementById('question'),
+            questionZone: document.getElementById('questionZone'),
+            optionsContainer: document.getElementById('optionsContainer'),
+            resultMessage: document.getElementById('resultMessage'),
+            answerFeedback: document.getElementById('answerFeedback')
+        };
+        
+        // Zone distribution
+        const zoneTypes = ['K', 'S', 'L', 'C'];
+        const zoneDistribution = {
+            K: 3, // Konsentrasi
+            S: 2, // Suhu
+            L: 2, // Luas Permukaan
+            C: 2  // Katalis
+        };
+        
+        // Initialize the game
+        function initGame() {
+            // Add event listeners
+            document.getElementById('startBtn').addEventListener('click', () => showScreen('mode'));
+            document.getElementById('tutorialBtn').addEventListener('click', () => showScreen('tutorial'));
+            document.getElementById('backFromTutorialBtn').addEventListener('click', () => showScreen('welcome'));
+            
+            document.getElementById('vsPlayerBtn').addEventListener('click', () => {
+                gameMode = 'player';
+                showScreen('symbol');
+            });
+            
+            document.getElementById('vsComputerBtn').addEventListener('click', () => {
+                gameMode = 'computer';
+                showScreen('symbol');
+            });
+            
+            document.getElementById('symbolX').addEventListener('click', () => {
+                playerSymbol = 'X';
+                opponentSymbol = 'O';
+                setupGame();
+            });
+            
+            document.getElementById('symbolO').addEventListener('click', () => {
+                playerSymbol = 'O';
+                opponentSymbol = 'X';
+                setupGame();
+            });
+            
+            document.getElementById('restartBtn').addEventListener('click', resetGame);
+            document.getElementById('mainMenuBtn').addEventListener('click', () => showScreen('welcome'));
+            document.getElementById('playAgainBtn').addEventListener('click', resetGame);
+            document.getElementById('resultMenuBtn').addEventListener('click', () => showScreen('welcome'));
+            
+            document.getElementById('settingsBtn').addEventListener('click', () => showScreen('settings'));
+            document.getElementById('backFromSettingsBtn').addEventListener('click', () => {
+                // Return to previous screen
+                for (let screen in screens) {
+                    if (screens[screen].classList.contains('active') && screen !== 'settings') {
+                        showScreen(screen);
+                        return;
+                    }
+                }
+                showScreen('welcome');
+            });
+            
+            document.getElementById('soundToggle').addEventListener('change', (e) => {
+                soundEnabled = e.target.checked;
+            });
+            
+            document.getElementById('musicToggle').addEventListener('change', (e) => {
+                musicEnabled = e.target.checked;
+            });
+            
+            // Setup difficulty buttons
+            const difficultyBtns = document.querySelectorAll('.difficulty-btn');
+            difficultyBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    difficultyBtns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    difficulty = btn.dataset.difficulty;
+                });
+            });
+        }
+        
+        // Show a specific screen
+        function showScreen(screenId) {
+            for (let key in screens) {
+                screens[key].classList.remove('active');
+            }
+            screens[screenId].classList.add('active');
+        }
+        
+        // Setup the game board
+        function setupGame() {
+            // Reset game state
+            board = ['', '', '', '', '', '', '', '', ''];
+            isGameActive = true;
+            currentPlayer = 'X';
+            
+            // Generate zones for the board
+            generateBoardZones();
+            
+            // Create the game board
+            createGameBoard();
+            
+            // Update display
+            elements.currentPlayer.textContent = currentPlayer;
+            elements.scoreX.textContent = scores.X;
+            elements.scoreO.textContent = scores.O;
+            
+            // Show game screen
+            showScreen('game');
+            
+            // If computer goes first
+            if (gameMode === 'computer' && opponentSymbol === 'X') {
+                setTimeout(makeComputerMove, 1000);
+            }
+        }
+        
+        // Generate random zones for the board
+        function generateBoardZones() {
+            boardZones = [];
+            let remaining = { ...zoneDistribution };
+            
+            for (let i = 0; i < 9; i++) {
+                let possibleZones = Object.keys(remaining).filter(zone => remaining[zone] > 0);
+                if (possibleZones.length === 0) {
+                    // If all zones are distributed, select randomly
+                    boardZones.push(zoneTypes[Math.floor(Math.random() * zoneTypes.length)]);
+                } else {
+                    let selectedZone = possibleZones[Math.floor(Math.random() * possibleZones.length)];
+                    boardZones.push(selectedZone);
+                    remaining[selectedZone]--;
+                }
+            }
+        }
+        
+        // Create the game board
+        function createGameBoard() {
+            elements.gameBoard.innerHTML = '';
+            
+            for (let i = 0; i < 9; i++) {
+                const cell = document.createElement('div');
+                cell.classList.add('cell');
+                cell.dataset.index = i;
+                
+                const zoneElem = document.createElement('div');
+                zoneElem.classList.add('cell-zone', `zone-${boardZones[i]}`);
+                zoneElem.textContent = boardZones[i];
+                cell.appendChild(zoneElem);
+                
+                const cellContent = document.createElement('div');
+                cellContent.classList.add('cell-content');
+                cell.appendChild(cellContent);
+                
+                cell.addEventListener('click', () => cellClick(i));
+                elements.gameBoard.appendChild(cell);
+            }
+        }
+        
+        // Handle cell click
+        function cellClick(index) {
+            // Check if cell is already occupied or game is not active
+            if (board[index] !== '' || !isGameActive) return;
+            
+            // Check if it's player's turn in computer mode
+            if (gameMode === 'computer' && currentPlayer !== playerSymbol) return;
+            
+            // Store the selected cell
+            selectedCell = index;
+            
+            // Show question screen
+            showQuestionScreen(boardZones[index]);
+        }
+        
+        // Show question based on the zone
+        function showQuestionScreen(zone) {
+            const difficultyQuestions = questions[zone][difficulty];
+            const randomIndex = Math.floor(Math.random() * difficultyQuestions.length);
+            const questionData = difficultyQuestions[randomIndex];
+            
+            let zoneFullName;
+            switch(zone) {
+                case 'K': zoneFullName = 'Konsentrasi'; break;
+                case 'S': zoneFullName = 'Suhu'; break;
+                case 'L': zoneFullName = 'Luas Permukaan'; break;
+                case 'C': zoneFullName = 'Katalis'; break;
+            }
+            
+            elements.questionZone.textContent = `Pertanyaan - Zona ${zoneFullName}`;
+            elements.question.textContent = questionData.question;
+            
+            // Clear previous options
+            elements.optionsContainer.innerHTML = '';
+            
+            // Create option buttons
+            questionData.options.forEach((option, idx) => {
+                const optionBtn = document.createElement('button');
+                optionBtn.classList.add('option-btn');
+                optionBtn.textContent = option;
+                optionBtn.addEventListener('click', () => checkAnswer(idx, questionData.answer));
+                elements.optionsContainer.appendChild(optionBtn);
+            });
+            
+            // Hide any previous feedback
+            elements.answerFeedback.style.display = 'none';
+            
+            showScreen('question');
+        }
+        
+        // Check if the answer is correct
+        function checkAnswer(selectedIndex, correctIndex) {
+            const optionButtons = elements.optionsContainer.querySelectorAll('.option-btn');
+            
+            // Highlight correct and wrong answers
+            optionButtons.forEach((btn, idx) => {
+                if (idx === correctIndex) {
+                    btn.classList.add('correct-answer');
+                } else if (idx === selectedIndex && selectedIndex !== correctIndex) {
+                    btn.classList.add('wrong-answer');
+                }
+            });
+            
+            // Show feedback
+            elements.answerFeedback.style.display = 'block';
+            
+            if (selectedIndex === correctIndex) {
+                elements.answerFeedback.textContent = 'Jawaban Benar!';
+                elements.answerFeedback.style.backgroundColor = 'rgba(46, 204, 113, 0.2)';
+                
+                // Play correct sound effect
+                if (soundEnabled) {
+                    // Sound effect placeholder
+                }
+                
+                // Mark the cell with current player's symbol
+                setTimeout(() => {
+                    markCell(selectedCell);
+                    showScreen('game');
+                    
+                    // Check for winner or tie
+                    if (!checkWinner() && !checkTie()) {
+                        // Switch player
+                        currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+                        elements.currentPlayer.textContent = currentPlayer;
+                        
+                        // Computer's turn
+                        if (gameMode === 'computer' && currentPlayer === opponentSymbol) {
+                            setTimeout(makeComputerMove, 1000);
+                        }
+                    }
+                }, 1000);
+            } else {
+                elements.answerFeedback.textContent = 'Jawaban Salah!';
+                elements.answerFeedback.style.backgroundColor = 'rgba(231, 76, 60, 0.2)';
+                
+                // Play wrong sound effect
+                if (soundEnabled) {
+                    // Sound effect placeholder
+                }
+                
+                // Switch player
+                setTimeout(() => {
+                    currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+                    elements.currentPlayer.textContent = currentPlayer;
+                    showScreen('game');
+                    
+                    // Computer's turn
+                    if (gameMode === 'computer' && currentPlayer === opponentSymbol) {
+                        setTimeout(makeComputerMove, 1000);
+                    }
+                }, 1000);
+            }
+        }
+        
+        // Mark the cell with the current player's symbol
+        function markCell(index) {
+            board[index] = currentPlayer;
+            const cell = elements.gameBoard.children[index].querySelector('.cell-content');
+            cell.textContent = currentPlayer;
+        }
+        
+        // Make a move for the computer
+        function makeComputerMove() {
+            if (!isGameActive) return;
+            
+            // Find available cells
+            const availableCells = board.map((cell, index) => cell === '' ? index : null).filter(index => index !== null);
+            
+            if (availableCells.length > 0) {
+                // For now, just select a random cell
+                const randomIndex = availableCells[Math.floor(Math.random() * availableCells.length)];
+                selectedCell = randomIndex;
+                
+                // Show question for that cell
+                showQuestionScreen(boardZones[randomIndex]);
+            }
+        }
+        
+        // Check for a winner
+        function checkWinner() {
+            const winningCombinations = [
+                [0, 1, 2], [3, 4, 5], [6, 7, 8], // rows
+                [0, 3, 6], [1, 4, 7], [2, 5, 8], // columns
+                [0, 4, 8], [2, 4, 6]             // diagonals
+            ];
+            
+            for (let combination of winningCombinations) {
+                const [a, b, c] = combination;
+                if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+                    // We have a winner
+                    isGameActive = false;
+                    
+                    // Highlight the winning combination
+                    combination.forEach(index => {
+                        elements.gameBoard.children[index].style.backgroundColor = 'rgba(46, 204, 113, 0.3)';
+                    });
+                    
+                    // Update scores
+                    scores[board[a]]++;
+                    elements.scoreX.textContent = scores.X;
+                    elements.scoreO.textContent = scores.O;
+                    
+                    // Show result screen
+                    let winnerText;
+                    if (gameMode === 'computer') {
+                        winnerText = board[a] === playerSymbol ? 'Anda Menang!' : 'Komputer Menang!';
+                    } else {
+                        winnerText = `Pemain ${board[a]} Menang!`;
+                    }
+                    elements.resultMessage.textContent = winnerText;
+                    
+                    setTimeout(() => showScreen('result'), 1000);
+                    return true;
+                }
+            }
+            
+            return false;
+        }
+        
+        // Check for a tie
+        function checkTie() {
+            if (!board.includes('')) {
+                isGameActive = false;
+                elements.resultMessage.textContent = 'Permainan Seri!';
+                setTimeout(() => showScreen('result'), 1000);
+                return true;
+            }
+            return false;
+        }
+        
+        // Reset the game
+        function resetGame() {
+            setupGame();
+        }
+        
+        // Start the game when page loads
+        window.addEventListener('DOMContentLoaded', initGame);
+    </script>
+</body>
+</html>
