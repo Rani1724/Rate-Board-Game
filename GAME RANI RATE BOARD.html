@@ -1,0 +1,1067 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arena Permainan-rate Board Game</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', 'Arial', sans-serif;
+            background: #e3f2fd;
+            color: #1a237e;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+            background-image: none;
+        }
+
+        .game-container {
+            background: #ffffff;
+            border: 2px solid #90caf9;
+            border-radius: 18px;
+            padding: 24px;
+            margin-top: 24px;
+            box-shadow: 0 0 24px #bbdefb;
+            position: relative;
+        }
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+            max-width: 420px;
+            margin: 24px auto;
+        }
+
+        .cell {
+            height: 110px;
+            background: #e3f2fd;
+            border: 2px solid #42a5f5;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 36px;
+            font-weight: bold;
+            color: #1976d2;
+            position: relative;
+            transition: transform 0.2s, box-shadow 0.2s, background 0.2s, color 0.2s;
+            box-shadow: 0 2px 8px #bbdefb;
+        }
+
+        .cell:hover {
+            transform: scale(1.08);
+            box-shadow: 0 4px 16px #90caf9;
+            background: #bbdefb;
+            color: #0d47a1;
+        }
+
+        .zone-label {
+            position: absolute;
+            top: 7px;
+            left: 7px;
+            font-size: 13px;
+            padding: 2px 7px;
+            border-radius: 5px;
+            background-color: #e3f2fd;
+            font-weight: bold;
+        }
+
+        .zone-K { color: #1976d2; }
+        .zone-S { color: #0288d1; }
+        .zone-L { color: #039be5; }
+        .zone-C { color: #01579b; }
+
+        .button {
+            background: #42a5f5;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 28px;
+            margin: 12px;
+            font-family: 'Segoe UI', 'Arial', sans-serif;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s;
+            box-shadow: 0 2px 8px #bbdefb;
+        }
+
+        .button:hover {
+            background: #1976d2;
+            color: #fffde7;
+        }
+
+        .typing-effect {
+            overflow: hidden;
+            white-space: pre-wrap;
+            margin: 0;
+            text-align: left;
+            padding: 14px;
+            height: 150px;
+            overflow-y: auto;
+            border: 2px solid #90caf9;
+            background: #e3f2fd;
+            margin-bottom: 24px;
+            border-radius: 8px;
+            color: #1a237e;
+            font-size: 18px;
+        }
+
+        .player-info {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 24px;
+        }
+
+        .player-card {
+            border: 2px solid #90caf9;
+            border-radius: 8px;
+            padding: 14px;
+            width: 45%;
+            background: #e3f2fd;
+            color: #1a237e;
+            box-shadow: 0 2px 8px #bbdefb;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(187, 222, 251, 0.85);
+        }
+
+        .modal-content {
+            background: #ffffff;
+            color: #1a237e;
+            margin: 10% auto;
+            padding: 24px;
+            border: 2px solid #90caf9;
+            border-radius: 16px;
+            max-width: 520px;
+            box-shadow: 0 0 24px #bbdefb;
+        }
+
+        input, select {
+            background: #e3f2fd;
+            color: #1a237e;
+            border: 2px solid #90caf9;
+            padding: 10px;
+            margin: 7px;
+            border-radius: 7px;
+            font-family: 'Segoe UI', 'Arial', sans-serif;
+            width: 85%;
+            font-size: 16px;
+        }
+
+        .ascii-art h1 {
+            font-size: 2.8em;
+            font-weight: bold;
+            letter-spacing: 4px;
+            color: #1976d2;
+            margin: 0 auto;
+            text-align: center;
+            text-shadow: 2px 2px 0 #fff, 3px 3px 0 #90caf9;
+            font-family: 'Segoe UI', 'Arial', sans-serif;
+        }
+
+        .stats-container {
+            text-align: left;
+            margin: 24px 0;
+            border: 2px solid #90caf9;
+            padding: 14px;
+            border-radius: 8px;
+            background: #e3f2fd;
+            color: #1a237e;
+        }
+
+        /* Music controls */
+        .music-controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 8px 12px;
+            border-radius: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+        }
+
+        .music-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 20px;
+            color: #1976d2;
+            transition: transform 0.2s;
+        }
+
+        .music-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .volume-control {
+            width: 80px;
+            -webkit-appearance: none;
+            height: 5px;
+            background: #bbdefb;
+            border-radius: 5px;
+            outline: none;
+        }
+
+        .volume-control::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 15px;
+            height: 15px;
+            background: #1976d2;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        /* Animasi Laboratorium */
+        .lab-bg {
+            position: relative;
+            width: 100%;
+            height: 200px;
+            margin: 0 auto 24px;
+            overflow: hidden;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .lab-table {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            height: 20px;
+            background: #795548;
+            border-radius: 10px 10px 0 0;
+            box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .tube {
+            position: absolute;
+            bottom: 20px;
+            width: 40px;
+            height: 100px;
+            animation: bounce 2s infinite;
+        }
+
+        .tube1 { left: 10%; }
+        .tube2 { right: 10%; }
+
+        .bottle {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 60px;
+            animation: bounce 2s infinite;
+        }
+
+        .atom {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 60px;
+            animation: spin 4s linear infinite;
+        }
+
+        .electron {
+            animation: orbit 2s linear infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        @keyframes spin {
+            0% { transform: translateX(-50%) rotate(0deg); }
+            100% { transform: translateX(-50%) rotate(360deg); }
+        }
+
+        @keyframes orbit {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Hiasan atase laboratorium lucu */
+        .lab-header-decoration {
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        .rack {
+            display: inline-block;
+            position: relative;
+        }
+
+        .rack rect {
+            fill: #fff;
+            stroke-width: 2;
+        }
+
+        .rack .bubble {
+            animation: bubble 2s infinite;
+        }
+
+        @keyframes bubble {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0); }
+        }
+
+        .lab-title {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-top: 10px;
+            color: #1976d2;
+            text-shadow: 1px 1px 0 #fff, 2px 2px 0 #90caf9;
+        }
+    </style>
+</head>
+<body>
+    <!-- Hiasan atase laboratorium lucu -->
+    <div class="lab-header-decoration">
+        <!-- Rak alat kimia -->
+        <div class="rack">
+            <svg width="220" height="60">
+                <!-- Rak -->
+                <rect x="0" y="50" width="220" height="10" rx="5" fill="#bdbdbd"/>
+                <!-- Tabung reaksi -->
+                <rect x="20" y="20" width="16" height="30" rx="8" fill="#fff" stroke="#42a5f5" stroke-width="2"/>
+                <ellipse cx="28" cy="20" rx="8" ry="5" fill="#90caf9"/>
+                <rect x="50" y="10" width="16" height="40" rx="8" fill="#fff" stroke="#ffb347" stroke-width="2"/>
+                <ellipse cx="58" cy="10" rx="8" ry="5" fill="#ffe082"/>
+                <!-- Erlenmeyer -->
+                <polygon points="90,50 100,10 110,50" fill="#fff" stroke="#43c6ac" stroke-width="2"/>
+                <ellipse cx="105" cy="10" rx="5" ry="3" fill="#43c6ac"/>
+                <!-- Botol -->
+                <rect x="130" y="25" width="18" height="25" rx="6" fill="#fff" stroke="#1976d2" stroke-width="2"/>
+                <ellipse cx="139" cy="25" rx="9" ry="4" fill="#90caf9"/>
+                <!-- Atom -->
+                <circle cx="180" cy="35" r="10" fill="#42a5f5"/>
+                <circle cx="170" cy="25" r="4" fill="#ffb347"/>
+                <circle cx="190" cy="45" r="4" fill="#ffb347"/>
+                <line x1="170" y1="25" x2="190" y2="45" stroke="#1976d2" stroke-width="2"/>
+            </svg>
+        </div>
+        <!-- Judul besar -->
+        <div class="lab-title">
+            <span>🧪 LABORATORIUM KIMIA EDUKATIF 🧪</span>
+        </div>
+    </div>
+
+    <div class="ascii-art">
+        <h1>RATE BOARD GAME</h1>
+    </div>
+    <div class="game-container">
+        <!-- Music Controls -->
+        <div class="music-controls">
+            <button class="music-btn" id="play-btn">▶️</button>
+            <button class="music-btn" id="pause-btn">⏸️</button>
+            <input type="range" min="0" max="1" step="0.1" value="0.5" class="volume-control" id="volume-control">
+        </div>
+
+        <div class="typing-effect" id="narration">
+            Selamat datang di Area RB-Rate Board Game!
+        </div>
+        
+        <div id="setup-screen">
+            <button class="button" id="start-button">Mulai Petualangan</button>
+        </div>
+        
+        <div id="game-screen" style="display:none;">
+            <div class="player-info">
+                <div class="player-card" id="player1-info">
+                    <h3>Pemain 1</h3>
+                    <p>Simbol: <span id="player1-symbol">X</span></p>
+                    <p>Benar: <span id="player1-correct">0</span></p>
+                    <p>Salah: <span id="player1-wrong">0</span></p>
+                </div>
+                <div class="player-card" id="player2-info">
+                    <h3>Pemain 2</h3>
+                    <p>Simbol: <span id="player2-symbol">O</span></p>
+                    <p>Benar: <span id="player2-correct">0</span></p>
+                    <p>Salah: <span id="player2-wrong">0</span></p>
+                </div>
+            </div>
+            
+            <p>Giliran: <span id="current-player">Pemain 1</span></p>
+            
+            <div class="board" id="game-board">
+                <!-- Board akan diisi secara dinamis melalui JavaScript -->
+            </div>
+        </div>
+        
+        <div id="result-screen" style="display:none;">
+            <h2>Hasil Petualangan</h2>
+            <div class="stats-container" id="game-stats">
+                <!-- Statistik akan diisi secara dinamis -->
+            </div>
+            <div id="email-section">
+                <h3>Kirim Hasil ke Email</h3>
+                <input type="email" id="email-input" placeholder="Masukkan alamat email Anda">
+                <button class="button" id="send-email-button">Kirim Hasil</button>
+            </div>
+            <button class="button" id="play-again-button">Main Lagi</button>
+        </div>
+        
+        <div id="final-result" style="font-size:2em;color:#1976d2;font-weight:bold;margin:24px 0;"></div>
+    </div>
+    
+    <!-- Modal untuk pemilihan mode dan pengaturan awal -->
+    <div id="setup-modal" class="modal">
+        <div class="modal-content">
+            <h2>Pengaturan Petualangan</h2>
+            <form id="setup-form">
+                <div>
+                    <label for="player1-name">Nama Pemain 1:</label>
+                    <input type="text" id="player1-name" required>
+                </div>
+                <div>
+                    <label for="player2-name">Nama Pemain 2:</label>
+                    <input type="text" id="player2-name" required>
+                </div>
+                <div>
+                    <label for="player1-symbol">Simbol Pemain 1:</label>
+                    <select id="player1-symbol-select">
+                        <option value="X">X</option>
+                        <option value="O">O</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="email-option">Kirim hasil melalui email:</label>
+                    <select id="email-option">
+                        <option value="no">Tidak</option>
+                        <option value="yes">Ya</option>
+                    </select>
+                </div>
+                <div id="email-settings" style="display:none;">
+                    <div>
+                        <label for="email-address">Alamat Email:</label>
+                        <input type="email" id="email-address">
+                    </div>
+                </div>
+                <button type="submit" class="button">Mulai Petualangan</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Modal untuk soal -->
+    <div id="question-modal" class="modal">
+        <div class="modal-content">
+            <h2>Tantangan Zona <span id="zone-name"></span></h2>
+            <p id="question-text"></p>
+            <div id="answer-options">
+                <!-- Opsi jawaban akan diisi secara dinamis -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- Audio Element -->
+    <audio id="background-music" loop>
+        <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
+        Browser Anda tidak mendukung elemen audio.
+    </audio>
+    
+    <!-- Script -->
+    <script>
+        // Dataset Soal Berdasarkan Zona
+        const questions = {
+            K: [ // Konsentrasi
+                {
+                    question: "Jika konsentrasi reaktan A dinaikkan dua kali lipat, bagaimana pengaruhnya terhadap laju reaksi?",
+                    options: [
+                        "Laju reaksi menjadi 2 kali lebih cepat",
+                        "Laju reaksi menjadi 4 kali lebih cepat",
+                        "Laju reaksi tetap sama",
+                        "Laju reaksi menjadi setengahnya"
+                    ],
+                    answer: 0
+                },
+                {
+                    question: "Bagaimana rumus hukum laju reaksi orde 2 terhadap reaktan A?",
+                    options: [
+                        "v = k[A]",
+                        "v = k[A]²",
+                        "v = k[A][B]",
+                        "v = k"
+                    ],
+                    answer: 1
+                },
+                {
+                    question: "Konsentrasi yang tinggi dapat mempercepat laju reaksi karena...",
+                    options: [
+                        "Molekul bergerak lebih cepat",
+                        "Frekuensi tumbukan antarmolekul meningkat",
+                        "Energi aktivasi menurun",
+                        "Suhu reaksi meningkat"
+                    ],
+                    answer: 1
+                }
+            ],
+            S: [ // Suhu
+                {
+                    question: "Jika suhu dinaikkan 10°C, berapa kali laju reaksi umumnya meningkat?",
+                    options: [
+                        "2-3 kali lipat",
+                        "5-10 kali lipat",
+                        "tidak berubah",
+                        "menurun setengahnya"
+                    ],
+                    answer: 0
+                },
+                {
+                    question: "Peningkatan suhu mempengaruhi laju reaksi dengan cara...",
+                    options: [
+                        "Menurunkan energi aktivasi",
+                        "Meningkatkan energi kinetik molekul",
+                        "Mengurangi jumlah molekul",
+                        "Mengubah sifat katalis"
+                    ],
+                    answer: 1
+                },
+                {
+                    question: "Hubungan antara konstanta laju reaksi (k) dengan suhu ditunjukkan oleh persamaan...",
+                    options: [
+                        "Hukum Boyle",
+                        "Hukum Henry",
+                        "Persamaan Arrhenius",
+                        "Hukum Charles"
+                    ],
+                    answer: 2
+                }
+            ],
+            L: [ // Luas Permukaan
+                {
+                    question: "Gula berbentuk serbuk lebih cepat larut daripada gula batu karena...",
+                    options: [
+                        "Massa yang lebih kecil",
+                        "Luas permukaan yang lebih besar",
+                        "Konsentrasi yang lebih tinggi",
+                        "Molekul gula serbuk lebih reaktif"
+                    ],
+                    answer: 1
+                },
+                {
+                    question: "Memperkecil ukuran partikel zat padat akan...",
+                    options: [
+                        "Menurunkan laju reaksi",
+                        "Meningkatkan laju reaksi",
+                        "Tidak berpengaruh pada laju reaksi",
+                        "Mengubah produk reaksi"
+                    ],
+                    answer: 1
+                },
+                {
+                    question: "Reaksi antara seng dan asam klorida dapat dipercepat dengan cara...",
+                    options: [
+                        "Menggunakan seng batangan",
+                        "Menggunakan seng granul",
+                        "Mengurangi konsentrasi asam",
+                        "Menurunkan suhu reaksi"
+                    ],
+                    answer: 1
+                }
+            ],
+            C: [ // Katalis
+                {
+                    question: "Katalis berfungsi untuk...",
+                    options: [
+                        "Menambah energi kinetik molekul",
+                        "Menurunkan energi aktivasi",
+                        "Mengurangi konsentrasi reaktan",
+                        "Menaikkan suhu reaksi"
+                    ],
+                    answer: 1
+                },
+                {
+                    question: "Dalam reaksi pembuatan amonia, katalis yang digunakan adalah...",
+                    options: [
+                        "Platinum",
+                        "MnO₂",
+                        "Fe",
+                        "Ni"
+                    ],
+                    answer: 2
+                },
+                {
+                    question: "Enzim adalah contoh dari...",
+                    options: [
+                        "Biokatalis",
+                        "Inhibitor",
+                        "Katalis heterogen",
+                        "Autokatalis"
+                    ],
+                    answer: 0
+                }
+            ]
+        };
+        
+        // Zona pada papan permainan
+        const zones = [
+            'K', 'S', 'L', 'C',
+            'S', 'C', 'K', 'L',
+            'L', 'K', 'S', 'C'
+        ];
+        
+        // Variabel Global Game
+        let currentPlayer = 0; // 0 untuk pemain 1, 1 untuk pemain 2
+        let board = Array(9).fill(null);
+        let players = [
+            { name: 'Pemain 1', symbol: 'X', correct: 0, wrong: 0, zoneStats: {K: 0, S: 0, L: 0, C: 0} },
+            { name: 'Pemain 2', symbol: 'O', correct: 0, wrong: 0, zoneStats: {K: 0, S: 0, L: 0, C: 0} }
+        ];
+        let gameActive = false;
+        let emailResults = false;
+        let playerEmail = '';
+        
+        // Elemen DOM
+        const setupScreen = document.getElementById('setup-screen');
+        const gameScreen = document.getElementById('game-screen');
+        const resultScreen = document.getElementById('result-screen');
+        const narrationBox = document.getElementById('narration');
+        const startButton = document.getElementById('start-button');
+        const setupModal = document.getElementById('setup-modal');
+        const setupForm = document.getElementById('setup-form');
+        const questionModal = document.getElementById('question-modal');
+        const gameBoard = document.getElementById('game-board');
+        const emailOption = document.getElementById('email-option');
+        const emailSettings = document.getElementById('email-settings');
+        const playAgainButton = document.getElementById('play-again-button');
+        const sendEmailButton = document.getElementById('send-email-button');
+        const emailInput = document.getElementById('email-input');
+        
+        // Music Elements
+        const backgroundMusic = document.getElementById('background-music');
+        const playBtn = document.getElementById('play-btn');
+        const pauseBtn = document.getElementById('pause-btn');
+        const volumeControl = document.getElementById('volume-control');
+        
+        // Music Controls
+        playBtn.addEventListener('click', () => {
+            backgroundMusic.play();
+            playBtn.style.display = 'none';
+            pauseBtn.style.display = 'block';
+        });
+        
+        pauseBtn.addEventListener('click', () => {
+            backgroundMusic.pause();
+            playBtn.style.display = 'block';
+            pauseBtn.style.display = 'none';
+        });
+        
+        volumeControl.addEventListener('input', () => {
+            backgroundMusic.volume = volumeControl.value;
+        });
+        
+        // Set initial volume
+        backgroundMusic.volume = volumeControl.value;
+        
+        // Hide pause button initially
+        pauseBtn.style.display = 'none';
+        
+        // Efek animasi teks
+        function typeText(element, text, speed = 30) {
+            let i = 0;
+            element.innerHTML = '';
+            return new Promise((resolve) => {
+                function typing() {
+                    if (i < text.length) {
+                        element.innerHTML += text.charAt(i);
+                        i++;
+                        setTimeout(typing, speed);
+                    } else {
+                        resolve();
+                    }
+                }
+                typing();
+            });
+        }
+        
+        // Inisialisasi permainan
+        function initGame() {
+            // Reset variabel
+            board = Array(9).fill(null);
+            currentPlayer = 0;
+            gameActive = true;
+            
+            // Tampilkan informasi pemain
+            document.getElementById('player1-info').querySelector('h3').textContent = players[0].name;
+            document.getElementById('player2-info').querySelector('h3').textContent = players[1].name;
+            document.getElementById('player1-symbol').textContent = players[0].symbol;
+            document.getElementById('player2-symbol').textContent = players[1].symbol;
+            document.getElementById('player1-correct').textContent = '0';
+            document.getElementById('player1-wrong').textContent = '0';
+            document.getElementById('player2-correct').textContent = '0';
+            document.getElementById('player2-wrong').textContent = '0';
+            
+            // Set giliran awal
+            document.getElementById('current-player').textContent = players[0].name;
+            
+            // Buat papan permainan
+            gameBoard.innerHTML = '';
+            for (let i = 0; i < 9; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                cell.dataset.index = i;
+                
+                // Tambahkan label zona
+                const zoneLabel = document.createElement('span');
+                zoneLabel.className = `zone-label zone-${zones[i]}`;
+                zoneLabel.textContent = `[${zones[i]}]`;
+                cell.appendChild(zoneLabel);
+                
+                cell.addEventListener('click', () => handleCellClick(i));
+                gameBoard.appendChild(cell);
+            }
+            
+            // Tampilkan layar permainan
+            setupScreen.style.display = 'none';
+            gameScreen.style.display = 'block';
+            resultScreen.style.display = 'none';
+            
+            // Narasi pembuka
+            typeText(narrationBox, `Selamat datang di Area GEM, ${players[0].name} dan ${players[1].name}! Kalian akan menguji kemampuan pemahaman konsep Laju Reaksi dalam pertarungan seru. Setiap sel memiliki zona berbeda yang menantang pemahaman kalian. Selamat berpetualang!`);
+            
+            // Mulai musik jika belum dimulai
+            if (backgroundMusic.paused) {
+                backgroundMusic.play();
+                playBtn.style.display = 'none';
+                pauseBtn.style.display = 'block';
+            }
+        }
+        
+        // Handler klik pada sel papan
+        function handleCellClick(index) {
+            // Periksa apakah sel sudah terisi atau permainan tidak aktif
+            if (board[index] !== null || !gameActive) return;
+            
+            // Tampilkan soal berdasarkan zona
+            showQuestion(zones[index], index);
+        }
+        
+        // Tampilkan modal soal
+        function showQuestion(zone, cellIndex) {
+            // Pilih soal acak dari zona yang dipilih
+            const zoneQuestions = questions[zone];
+            const randomIndex = Math.floor(Math.random() * zoneQuestions.length);
+            const question = zoneQuestions[randomIndex];
+            
+            document.getElementById('zone-name').textContent = getZoneName(zone);
+            document.getElementById('question-text').textContent = question.question;
+            
+            // Buat opsi jawaban
+            const answerOptions = document.getElementById('answer-options');
+            answerOptions.innerHTML = '';
+            
+            question.options.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.className = 'button';
+                button.textContent = option;
+                button.addEventListener('click', () => handleAnswer(index === question.answer, cellIndex, zone));
+                answerOptions.appendChild(button);
+            });
+            
+            // Tampilkan modal
+            questionModal.style.display = 'block';
+        }
+        
+        // Mendapatkan nama lengkap zona
+        function getZoneName(zoneCode) {
+            switch(zoneCode) {
+                case 'K': return 'Konsentrasi';
+                case 'S': return 'Suhu';
+                case 'L': return 'Luas Permukaan';
+                case 'C': return 'Katalis';
+                default: return 'Unknown';
+            }
+        }
+        
+        // Handler jawaban soal
+        function handleAnswer(correct, cellIndex, zone) {
+            // Tutup modal soal
+            questionModal.style.display = 'none';
+            
+            if (correct) {
+                // Jawaban benar
+                players[currentPlayer].correct++;
+                players[currentPlayer].zoneStats[zone]++;
+                board[cellIndex] = players[currentPlayer].symbol;
+                
+                // Update tampilan sel
+                const cell = gameBoard.children[cellIndex];
+                cell.textContent = players[currentPlayer].symbol;
+                
+                // Update statistik
+                document.getElementById(`player${currentPlayer + 1}-correct`).textContent = players[currentPlayer].correct;
+                
+                // Periksa kondisi kemenangan
+                if (checkWinner()) {
+                    gameActive = false;
+                    endGame(`${players[currentPlayer].name} menang! Selamat!`);
+                    return;
+                }
+                
+                // Periksa kondisi seri
+                if (board.every(cell => cell !== null)) {
+                    gameActive = false;
+                    endGame('Permainan berakhir seri!');
+                    return;
+                }
+            } else {
+                // Jawaban salah
+                players[currentPlayer].wrong++;
+                document.getElementById(`player${currentPlayer + 1}-wrong`).textContent = players[currentPlayer].wrong;
+                typeText(narrationBox, `${players[currentPlayer].name} menjawab salah! Giliran berganti.`);
+            }
+            
+            // Ganti giliran
+            currentPlayer = 1 - currentPlayer;
+            document.getElementById('current-player').textContent = players[currentPlayer].name;
+        }
+        
+        // Periksa kondisi kemenangan
+        function checkWinner() {
+            const winPatterns = [
+                [0, 1, 2], [3, 4, 5], [6, 7, 8], // horizontal
+                [0, 3, 6], [1, 4, 7], [2, 5, 8], // vertical
+                [0, 4, 8], [2, 4, 6]             // diagonal
+            ];
+            
+            for (const pattern of winPatterns) {
+                const [a, b, c] = pattern;
+                if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+                    // Highlight sel yang menang
+                    pattern.forEach(index => {
+                        gameBoard.children[index].style.backgroundColor = '#33ff33';
+                        gameBoard.children[index].style.color = '#0a0a1a';
+                    });
+                    return true;
+                }
+            }
+            
+            return false;
+        }
+        
+        // Akhir permainan
+        function endGame(message) {
+            typeText(narrationBox, message + ' Petualangan berakhir!');
+
+            setTimeout(() => {
+                // Siapkan statistik
+                const stats = document.getElementById('game-stats');
+                stats.innerHTML = `
+                    <h3>Statistik Permainan</h3>
+                    <p><strong>${players[0].name}</strong> (${players[0].symbol}):</p>
+                    <ul>
+                        <li>Jawaban Benar: ${players[0].correct}</li>
+                        <li>Jawaban Salah: ${players[0].wrong}</li>
+                        <li>Zona Terbanyak: ${getMostUsedZone(0)}</li>
+                    </ul>
+                    <p><strong>${players[1].name}</strong> (${players[1].symbol}):</p>
+                    <ul>
+                        <li>Jawaban Benar: ${players[1].correct}</li>
+                        <li>Jawaban Salah: ${players[1].wrong}</li>
+                        <li>Zona Terbanyak: ${getMostUsedZone(1)}</li>
+                    </ul>
+                `;
+
+                // Tampilkan hasil akhir besar
+                document.getElementById('final-result').textContent = message;
+
+                // Simpan hasil ke file (simulasi)
+                saveResultsToFile();
+
+                // Tampilkan layar hasil
+                gameScreen.style.display = 'none';
+                resultScreen.style.display = 'block';
+
+                // Jika mode email diaktifkan, tampilkan bagian email
+                if (emailResults) {
+                    document.getElementById('email-section').style.display = 'block';
+                    emailInput.value = playerEmail;
+                } else {
+                    document.getElementById('email-section').style.display = 'none';
+                }
+            }, 2000);
+        }
+        
+        // Mendapatkan zona yang paling banyak digunakan
+        function getMostUsedZone(playerIndex) {
+            const zoneStats = players[playerIndex].zoneStats;
+            let mostUsedZone = 'Tidak ada';
+            let maxUse = 0;
+            
+            for (const zone in zoneStats) {
+                if (zoneStats[zone] > maxUse) {
+                    maxUse = zoneStats[zone];
+                    mostUsedZone = getZoneName(zone);
+                }
+            }
+            
+            return mostUsedZone + (maxUse > 0 ? ` (${maxUse}x)` : '');
+        }
+        
+        // Simpan hasil ke file
+        function saveResultsToFile() {
+            // Pada implementasi real, ini akan menyimpan ke file
+            // Di sini kita hanya membuat string data yang akan disimpan
+            const date = new Date().toLocaleString();
+            let resultData = `AREA GEM - HASIL PERMAINAN (${date})\n`;
+            resultData += `--------------------------------------------\n`;
+            resultData += `Mode: ${gameMode === 'ai' ? 'Melawan AI' : 'Bermain Bersama Teman'}\n\n`;
+            
+            for (let i = 0; i < 2; i++) {
+                resultData += `${players[i].name} (${players[i].symbol}):\n`;
+                resultData += `- Jawaban Benar: ${players[i].correct}\n`;
+                resultData += `- Jawaban Salah: ${players[i].wrong}\n`;
+                resultData += `- Persentase Kebenaran: ${Math.round(players[i].correct / (players[i].correct + players[i].wrong || 1) * 100)}%\n`;
+                resultData += `- Zona Terbanyak: ${getMostUsedZone(i)}\n\n`;
+            }
+            
+            // Tambahkan informasi pemenang
+            let winner = 'Seri';
+            if (checkWinner()) {
+                winner = players[currentPlayer].name;
+            }
+            resultData += `Hasil Akhir: ${winner}\n`;
+            
+            console.log('Data hasil yang akan disimpan:', resultData);
+            return resultData;
+        }
+        
+        // Kirim hasil ke email
+        function sendResultsEmail(email) {
+            // Pada implementasi real, ini akan mengirim email via SMTP
+            // Di sini kita hanya simulasikan pengiriman
+            
+            typeText(narrationBox, `Mengirim hasil petualangan ke email: ${email}...`);
+            
+            setTimeout(() => {
+                typeText(narrationBox, `Email berhasil dikirim ke ${email}! Terima kasih telah bermain Area GEM!`);
+            }, 2000);
+        }
+        
+        // Event Listeners
+        startButton.addEventListener('click', () => {
+            setupModal.style.display = 'block';
+        });
+        
+        emailOption.addEventListener('change', () => {
+            if (emailOption.value === 'yes') {
+                emailSettings.style.display = 'block';
+            } else {
+                emailSettings.style.display = 'none';
+            }
+        });
+        
+        setupForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            // Ambil data dari form
+            players[0].name = document.getElementById('player1-name').value || 'Pemain 1';
+            players[0].symbol = document.getElementById('player1-symbol-select').value;
+            players[1].symbol = players[0].symbol === 'X' ? 'O' : 'X';
+            players[1].name = document.getElementById('player2-name').value || 'Pemain 2';
+
+            emailResults = document.getElementById('email-option').value === 'yes';
+            if (emailResults) {
+                playerEmail = document.getElementById('email-address').value;
+            }
+
+            // Reset statistik pemain
+            players.forEach(player => {
+                player.correct = 0;
+                player.wrong = 0;
+                player.zoneStats = {K: 0, S: 0, L: 0, C: 0};
+            });
+            
+            // Tutup modal dan mulai permainan
+            setupModal.style.display = 'none';
+            initGame();
+        });
+        
+        playAgainButton.addEventListener('click', () => {
+            setupModal.style.display = 'block';
+        });
+        
+        sendEmailButton.addEventListener('click', () => {
+            const email = emailInput.value;
+            if (email) {
+                sendResultsEmail(email);
+            } else {
+                alert('Masukkan alamat email yang valid!');
+            }
+        });
+        
+        // Fungsi utama
+        function main() {
+            // Tampilkan animasi teks pembuka
+            typeText(narrationBox, "Selamat datang di RATE BOARD GAME! Tempat di mana pengetahuan kimia menjadi petualangan seru. Siap untuk memulai perjalanan edukatif?")
+                .then(() => {
+                    startButton.style.display = 'block';
+                });
+        }
+        
+        // Mulai program
+        window.onload = main;
+    </script>
+    
+    <!-- Animasi Laboratorium -->
+    <div class="lab-bg">
+      <!-- Meja laboratorium -->
+      <div class="lab-table"></div>
+      <!-- Tabung reaksi animasi -->
+      <div class="tube tube1">
+        <svg width="40" height="100">
+          <rect x="10" y="20" width="20" height="60" rx="10" fill="#fff" stroke="#42a5f5" stroke-width="3"/>
+          <ellipse cx="20" cy="20" rx="10" ry="6" fill="#90caf9"/>
+          <ellipse class="bubble" cx="20" cy="60" rx="5" ry="3" fill="#42a5f5"/>
+          <ellipse class="bubble" cx="20" cy="80" rx="3" ry="2" fill="#42a5f5"/>
+        </svg>
+      </div>
+      <div class="tube tube2">
+        <svg width="40" height="100">
+          <rect x="10" y="30" width="20" height="50" rx="10" fill="#fff" stroke="#ffb347" stroke-width="3"/>
+          <ellipse cx="20" cy="30" rx="10" ry="6" fill="#ffe082"/>
+          <ellipse class="bubble" cx="20" cy="60" rx="4" ry="2" fill="#ffb347"/>
+        </svg>
+      </div>
+      <!-- Botol kimia -->
+      <div class="bottle">
+        <svg width="40" height="60">
+          <ellipse cx="20" cy="50" rx="15" ry="8" fill="#43c6ac"/>
+          <rect x="10" y="20" width="20" height="30" rx="10" fill="#fff" stroke="#43c6ac" stroke-width="3"/>
+          <rect x="15" y="10" width="10" height="10" rx="5" fill="#43c6ac"/>
+        </svg>
+      </div>
+      <!-- Atom bergerak -->
+      <svg class="atom" width="60" height="60">
+        <circle cx="30" cy="30" r="12" fill="#90caf9" />
+        <circle class="electron" cx="30" cy="10" r="4" fill="#42a5f5" />
+        <circle class="electron" cx="50" cy="30" r="4" fill="#42a5f5" />
+        <circle class="electron" cx="30" cy="50" r="4" fill="#42a5f5" />
+        <circle class="electron" cx="10" cy="30" r="4" fill="#42a5f5" />
+      </svg>
+    </div>
+</body>
+</html>
